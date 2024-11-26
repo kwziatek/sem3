@@ -1,0 +1,21 @@
+Studia 3 sem - warunki zaliczenia przedmiotów
+technologie programowania
+lab
+0-50 -> 2
+51-60 -> 3
+.
+.
+.
+90-100 -> 5
+cw
+dwie kartkówki (0 - 5) - 10pkt max
+0-4 -> 2
+5-6 -> 3.0
+.
+.
+.
+9-10 - 5
+>10 - 5.5
+wykład
+kolos na ostatnich zajęciach
+ocena = 0.4lab + 0,4 cw + 0,2 w

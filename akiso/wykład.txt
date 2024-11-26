@@ -1,0 +1,30 @@
+w1
+William Stallings, Janusz Biernat, John Hennessy  - literatura na akiso	
+Co wchodzi w skład kompa?
+procesor: rdzenie (core), 2xL3 cache (jednostka wykonawcza): instruction + data
+core: alu (aritmetic logic unit), l1, l2 - cache: instruction + data, branchpredictor, loadStore logic, program logic
+pamięć: cache, ram, główny (HDD, SSD)
+zasilanie
+I/O: myszka, klawiatura, sieć, monitor, USB itp.
+koprocesory
+bios
+chłodzenie
+płyta główna
+magistrala - bus, PCIe - odpowiadają za komunikacje między komponentami
+
+laptop
+SoC
+warehouse
+mikrokontrolery
+ASIC
+mobile
+
+jakie różnice między nimi?
+- opóźnienie 
+- pobór prądu
+
+
+przetwarzanie
+przechowywanie
+przesyłanie danych
+sterowanie samym sobą

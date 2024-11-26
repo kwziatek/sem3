@@ -1,0 +1,8 @@
+Bazy danych:
+	-laby 25.10
+Akiso:
+	-laby 20.10
+Tech:
+	-laby
+Met:
+	Lista co tydzień, żadnych terminów

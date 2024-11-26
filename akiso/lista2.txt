@@ -1,0 +1,75 @@
+zad. 1
+/dev	-	katalog zawierający pliki specjalne, które reprezentują dostępne urządzenia
+/proc	-	wirtualny system plików, który dostarcza informacji o bieżących procesach w systemie i jego jądrze 
+/sys	-	 Zawiera sysfs wirtualny system plików sysfs, w którym znajdują się informacje związane ze sprzętowym systemem operacyjnym
+
+sudo dd if=/dev/sda bs=512 count=1 | hexdump -C
+if=/dev/sda - ścieżka do dysku
+bs=512 – rozmiar bloku (512 bajtów to wielkość sektora)
+count=1 – liczba sektorów do odczytu (odczytujemy tylko jeden)
+hexdump -C – wyświetla dane w formacie heksadecymalnym i ASCII.
+
+cat /proc/meminfo
+cat /proc/cpuinfo
+cat /proc/partitions
+
+zad. 2
+ps -eo pid,ppid,state,pri,nice,%mem,%cpu,etime,comm
+
+e - "everything" - wszystkie procesy
+o - wyświetl niestandardowy format
+pid - identyfikator procesu
+ppid - identyfikator procesu nadrzędnego
+state - stan procesu
+pri - priorytet procesu - im większy tym mniejszy priorytet
+nice - wartość nice - określa priotytet procesu 
+
+tty
+ps axjf
+
+zad. 3
+The -Wall flag stands for "warn all." This flag enables a broad set of warning messages for common code issues that could lead to potential problems. It doesn’t cover all warnings, but it includes most standard warnings, helping developers catch mistakes and potential issues in their code. Commonly enabled warnings include uninitialized variables, unused variables, and potential syntax issues. Using -Wall is generally recommended, as it catches a lot of common bugs and improves code quality.
+
+-Wall zgłasza ostrzeżenia podczas kompilacji. Nie zawiera w sobie wszystkich ostrzeżeń, natomiast pokrywa wszyskie standardowe takie jak niezainicjonowane czy nieużyte zmienne i błędy syntaxowe. Używanie -Wall jest zalecane, bo wyłapuje wiele częstych bugów i poprawia jakość kodu. 
+
+The -pedantic flag enforces strict compliance with the ANSI/ISO C/C++ standards. When this flag is enabled, the compiler issues warnings or errors for code that does not conform to the exact language standard, including extensions specific to GNU C or C++. This is especially useful for writing portable code that needs to be strictly standard-compliant. However, it can also lead to warnings or errors for code that may work fine on a specific compiler but might not be portable.
+
+Flaga -pedantic wymusza ścisłą zgodność ze standardami ANSI/ISO C/C++. Gdy ta flaga jest włączona, kompilator wyświetla ostrzeżenia lub błędy dla kodu, który nie jest zgodny z dokładnym standardem języka (w tym rozszerzeniami gnu C i C++). Jest to szczególnie przydatne przy pisaniu przenośnego kodu, który musi być ściśle zgodny ze standardami. Może to jednak również prowadzić do ostrzeżeń lub błędów dla kodu, który może działać dobrze na określonym kompilatorze, ale może nie być przenośny.
+
+zad. 4
+*komenda* & - uruchamia proces w tle
+ctrl + Z - usypia proces i wrzuca go w tło
+ctrl + C - przerywa proces
+
+komendy:
+-sleep x - usypia terminal na x sekund
+-jobs - wyświetla procesy w tle odpalone z terminala, z którego została wywołana komenda
+-fg - przenosi proces z tła na pierwszy plan
+-bg - przenosi uśpiony proces w tło i uruchamia go
+-kill -STOP %# (usypia proces w tle o indeksie x w jobs, można też podać PID - wtedy bez %)
+-kill -CONT %# (wznawia proces w tle o indeksie x w jobs, można też podać PID - wtedy bez %)
+
+procesy można przerzucać od tła używajać oprogramowania screen:
+	-tworzymy screen, w którym odpalamy proces
+	-wracamy to terminala przez co proces sobie leci na screenie (czyli w 	backgroundzie)
+komendy:
+	-screen
+	-screen -r *index* - (bez indeksu pokaże wszystkie screeny, chyba że jest tylko 1
+				do niego przejdzie)
+	-screen -S *index* -X quit (kończy sesje screen)
+	-ctrl + A, D - rozłącza screen - powrót do terminala 
+W screenie można korzystać z komend tak jak w terminalu
+
+zad. 5
+Jeden terminal przy pomocy cat wysyła dane do potoku, drugi go odczytuje. 
+Pierwszy czeka na input z klawiatury, drugi na dane z pierwszego.
+Skończenie edytowanie pierwszego cat'a przy pomocy crtl + D, kończy oczekiwanie
+na dane w cat'cie w drugim terminalu.
+
+zad. 6
+
+ansi:
+	składnia: \033[ *parametry* m 
+		zmiana koloru tekstu dla systemu 256: \033[38;5;x
+
+Da się, trzeba użyc 24-bitowych kolorów

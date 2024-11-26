@@ -1,0 +1,3 @@
+C:/Users/wziat/Studia/sem3/mpis/lista2/cmake-build-debug/CMakeFiles/lista2.dir
+C:/Users/wziat/Studia/sem3/mpis/lista2/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/wziat/Studia/sem3/mpis/lista2/cmake-build-debug/CMakeFiles/rebuild_cache.dir
