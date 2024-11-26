@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="0ed6d8bc-240f-49fc-b178-c9fb88080818" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/NewProject1/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/NewProject1/.idea/checkstyle-idea.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/NewProject1/.idea/checkstyleidea-libs/readme.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/NewProject1/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/NewProject1/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/NewProject1/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/NewProject1/src/main/resources/PMD-custom-ruleset.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/NewProject1/src/main/resources/sun_checks_custom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NewProject1/src/main/java/app/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/NewProject1/src/main/java/app/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SolsvingConflict0/howToConflict.txt" beforeDir="false" afterPath="$PROJECT_DIR$/SolsvingConflict0/howToConflict.txt" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/NewProject1" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 4
+}]]></component>
+  <component name="ProjectId" id="2o2VQOgpphALdjUwK2fykVe1J4H" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/wziat/Studies/tech_pro/NewProject1"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="0ed6d8bc-240f-49fc-b178-c9fb88080818" name="Changes" comment="" />
+      <created>1730067640953</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1730067640953</updated>
+    </task>
+    <servers />
+  </component>
+</project>

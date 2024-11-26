@@ -1,0 +1,34 @@
+@startuml
+
+class Main
+class Task
+class ToDoList
+class UserInterface
+
+
+ToDoList <|-- Task
+UserInterface <|-- ToDoList
+Main <|-- UserInterface
+
+class Task {
+-String name;
+-String note;
+-boolean completed;
+}
+
+class ToDoList {
+-ArrayList<Task> tasks;
+-String name;
+}
+
+class UserInterface {
+-Scanner scanner;
+-ArrayList<ToDoList> lists;
+}
+
+class Main {
+-Scanner scanner;
+-UserInterface ui;
+}
+
+@enduml

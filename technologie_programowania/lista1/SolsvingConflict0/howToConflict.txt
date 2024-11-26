@@ -1,0 +1,15 @@
+- have 2 branches
+- add and commit 1 branch
+- add and commit 2 branch
+- add and commit 2 branch 2time
+- merge the 1branach into 2 branch
+
+1. done
+2. installed 
+3. done
+4. done
+5. done
+6. done
+7. done
+
+use newProject1 to show pmd, checkstyle, umlet, merge conflict 
