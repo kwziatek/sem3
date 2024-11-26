@@ -1,0 +1,22 @@
+@startuml
+actor User
+actor LibraryStaff as Staff
+package app{
+    usecase "Check Out Book" as UC_BorrowBook
+    usecase "Return Book" as UC_ReturnBook
+    usecase "Add Book Copy" as UC_AddBookCopy
+    usecase "Create User Account" as UC_ManageUserAccount
+    usecase "Show Users" as UC_ShowUsers
+    usecase "Show Checked Out Books" as UC_ShowCheckedOutBooks
+    usecase "Show Books In Library" as UC_ShowBooksInLibrary
+}
+User --> UC_BorrowBook
+User --> UC_ReturnBook
+
+Staff --> UC_ShowUsers
+Staff --> UC_ShowBooksInLibrary
+Staff --> UC_ShowCheckedOutBooks
+Staff --> UC_AddBookCopy
+Staff --> UC_ManageUserAccount
+
+@enduml
