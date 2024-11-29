@@ -1,290 +1,171 @@
-1. Utowrzyc bazy danych i urzytkownikow
-    create database aparaty;
-    create user '279734'@'localhost' identified by 'wziatek34';
-    grant select, insert, update on aparaty.* to '279734'@'localhost';
-    flush privileges;
+1.
+	create database aparaty;
+	create user '279734'@'localhost' identified by 'wziatek34';
+	grant select, update, insert on aparaty.* to '279734'@localhost';
+	flush privileges;
 
-2. Utworzyc tabele
-    nalezy zmienic baze na aparaty
+2.
+	CREATE TABLE Matryca(
+    -> ID int PRIMARY KEY AUTO_INCREMENT,
+    -> przekatna decimal(4,2) check (przekatna > 0),
+    -> rozdzielczosc decimal(3,1) check (rozdzielczosc > 0),
+    -> typ varchar(10));
 
-    use aparaty;
+	CREATE TABLE Obiektyw(
+    -> ID int PRIMARY KEY AUTO_INCREMENT,
+    -> model varchar(30),
+    -> minPrzeslona float check (minPrzeslona > 0),
+    -> maxPrzeslona float check (maxPrzeslona > minPrzeslona));
 
-    create table Aparat (
-     model varchar(30),
-     producent int,
-     matryca int,
-     obiektyw int,
-     waga float check (waga >= 0),
-     tym enum('kompaktowy', 'lustrzanka', 'profesjonalny', 'inny'),
-     primary key (model),
-     foreign key (producent) references Producent(ID),
-     foreign key (matryca) references Matryca(ID),
-     foreign key (obiektyw) references Obiektryw(ID)
- );
+	CREATE TABLE Producent(
+    -> ID int PRIMARY KEY AUTO_INCREMENT,
+    -> nazwa varchar(50) NOT NULL,
+    -> kraj varchar (20) DEFAULT "nieznany",
+    -> adresKorespondencyjny varchar(100) DEFAULT "nieznany");
 
-    create table Producent (
-     ID int primary key auto_increment,
-     nazwa varchar(50) not null,
-     kraj varchar(20) default 'nieznany',
-     adresKorespondencyjny varchar(100) default 'nieznany'
-     );
+	ALTER TABLE Matryca AUTO_INCREMENT = 100;
 
-     create table Obiektyw (
-     id int auto_increment primary key,
-     model varchar(30),
-     minPrzeslona float check (minPrzeslona >= 0),
-     maxPrzeslona float check (maxPrzeslona >= 0 AND maxPrzeslona > minPrzeslona)
-     );
+	CREATE TABLE Aparat(
+    -> model varchar(30) PRIMARY KEY,
+    -> producent int,
+    -> matryca int,
+    -> obiektyw int,
+    -> waga float check (waga > 0),
+    -> typ enum ('kompaktowy', 'lustrzanka', 'profesjonalny', 'inny'),
+    -> FOREIGN KEY (matryca) references Matryca(ID),
+    -> FOREIGN KEY (producent) references Producent(ID),
+    -> FOREIGN KEY (obiektyw) references Obiektyw(ID));
 
-    create table Matryca (
-     ID int auto_increment primary key,
-     przekatna decimal(4,2) check (przekatna >=0),
-     rozdzielczosc decimal(3,1) check (rozdzielczosc >=0
- ),
-     typ varchar(10)
-     ) auto_increment=100;
+3.
+	INSERT INTO MATRYCA(przekatna, rozdzielczosc, typ) VALUES 
+	(34.55, 13.23, 'typ1'),	
+	(14.55, 52.23, 'typ6'),
+	(32.55, 27.23, 'typ4'),
+	(41.55, 63.23, 'typ2'),
+	(34.55, 87.23, 'typ3'),
+	(38.55, 12.23, 'typ2'),
+	(34.55, 43.23, 'typ7'),
+	(49.55, 81.23, 'typ2'),
+	(31.55, 93.23, 'typ1'),
+	(32.55, 57.23, 'typ5'),
+	(34.55, 58.23, 'typ4');
 
-    create table Aparat (
-        model VARCHAR(30),
-        producent INT,
-        matryca INT,
-        obiektyw INT,
-        waga float check (waga >= 0),
-        typ enum('kompaktowy', 'lustrzanka', 'profesjonalny', 'inny'),
-        primary key (model),
-        foreign key (producent) references Producent(ID),
-        foreign key (matryca) references Matryca(ID),
-        foreign key (obiektyw) references Obiektyw(ID)
-    );
+	INSERT INTO PRODUCENT(nazwa, kraj, adresKorespondencyjny) VALUES
+	('Canon', 'Chiny', 'Pekin'),
+	('Canon', 'Chiny', 'Pekin'),
+	('Canon', 'Chiny', 'Pekin'),
+	('Canon', 'Chiny', 'Pekin'),
+	('Canon', 'Chiny', 'Pekin'),
+	('Casio', 'Japonia', 'Tokyo'),
+	('Casio', 'Japonia', 'Tokyo'),
+	('Casio', 'Japonia', 'Tokyo'),
+	('Casio', 'Japonia', 'Tokyo'),
+	('Casio', 'Japonia', 'Tokyo'),
+	('Kodak', 'Poland', 'Warsaw'),
+	('Kodak', 'Poland', 'Warsaw'),
+	('Kodak', 'Poland', 'Warsaw'),
+	('Kodak', 'Poland', 'Warsaw'),
+	('Kodak', 'Poland', 'Warsaw');
 
-3. Wprowadzic dane
-    najpierw zamienic konto na 279734: wyjsc i mycli -u 279734 -p
+	INSERT INTO OBIEKTYW(model, minPrzeslona, maxPrzeslona) VALUES
+	('model a', 10.1, 15.1),
+	('model a', 10.1, 15.1),
+	('model a', 10.1, 15.1),
+	('model a', 10.1, 15.1),
+	('model a', 10.1, 15.1),
+	('model b', 9.1, 16.1),
+	('model b', 9.1, 16.1),
+	('model b', 9.1, 16.1),
+	('model b', 9.1, 16.1),
+	('model b', 9.1, 16.1),
+	('model c', 11.1, 14.1),
+	('model c', 11.1, 14.1),
+	('model c', 11.1, 14.1),
+	('model c', 11.1, 14.1),
+	('model c', 11.1, 14.1);
 
-    use aparaty;
+	INSERT INTO APARAT(model, producent, matryca, obiektyw, waga, typ) VALUES
+	('Canon 5', 14, 102, 2, 0.80, 'profesjonalny'),
+	('Canon 2', 13, 103, 3, 0.80, 'profesjonalny'),
+	('Canon 3', 12, 104, 4, 0.80, 'profesjonalny'),
+	('Canon 4', 11, 105, 5, 0.80, 'profesjonalny'),
+	('Kodak 1', 10, 106, 6, 0.80, 'profesjonalny'),
+	('Kodak 2', 9, 107, 7, 0.80, 'profesjonalny'),
+	('Kodak 3', 8, 108, 8, 0.80, 'profesjonalny'),
+	('Kodak 4', 7, 109, 9, 0.80, 'profesjonalny'),
+	('Kodak 5', 6, 110, 10, 0.80, 'profesjonalny'),
+	('Casio 1', 5, 111, 11, 0.81, 'profesjonalny'),
+	('Casio 2', 4, 112, 12, 0.81, 'profesjonalny'),
+	('Casio 3', 3, 113, 13, 0.81, 'profesjonalny'),
+	('Casio 4', 2, 114, 14, 0.81, 'profesjonalny'),
+	('Casio 5', 1, 115, 15, 0.81, 'profesjonalny');
 
-    //wygenerowane
+4.
+	
+	delimiter $$
+	create procedure generujAparaty()
+	 begin
+		declare i int default 1;
+		declare nowyModel varchar(30);
+		while i <= 100 do
+			set nowyModel = concat('nowyModel', i);
+			INSERT INTO Aparat VALUES(nowyModel, 1, 102, 1, 0.8, 'lustrzanka');
+			set i =  i + 1;
+		end while;
+	 end $$
+	delimiter ;
 
-    INSERT INTO Producent (nazwa, kraj, adresKorespondencyjny) VALUES
-    ('Canon', 'Japonia', 'Tokyo, Japonia'),
-    ('Nikon', 'Japonia', 'Tokyo, Japonia'),
-    ('Sony', 'Japonia', 'Tokyo, Japonia'),
-    ('Fujifilm', 'Japonia', 'Tokyo, Japonia'),
-    ('Panasonic', 'Japonia', 'Osaka, Japonia'),
-    ('DJI', 'Chiny', 'Shenzhen, Chiny'),
-    ('Huawei', 'Chiny', 'Shenzhen, Chiny'),
-    ('Xiaomi', 'Chiny', 'Pekin, Chiny'),
-    ('Haier', 'Chiny', 'Qingdao, Chiny'),
-    ('ZTE', 'Chiny', 'Shenzhen, Chiny'),
-    ('Samsung', 'Korea Poludniowa', 'Seul, Korea Poludniowa'),
-    ('LG', 'Korea Poludniowa', 'Seul, Korea Poludniowa'),
-    ('Leica', 'Niemcy', 'Wetzlar, Niemcy'),
-    ('Kodak', 'USA', 'Rochester, USA'),
-    ('Olympus', 'Japonia', 'Tokyo, Japonia');
+5.
 
-    INSERT INTO Obiektyw (model, minPrzeslona, maxPrzeslona) VALUES
-    ('Canon 50mm', 1.8, 22.0),
-    ('Nikon 35mm', 1.4, 16.0),
-    ('Sony 85mm', 1.2, 16.0),
-    ('Fujifilm 24mm', 2.0, 22.0),
-    ('Panasonic 18mm', 3.5, 16.0),
-    ('DJI 20mm', 1.7, 16.0),
-    ('Huawei 25mm', 2.2, 16.0),
-    ('Xiaomi 15mm', 1.8, 16.0),
-    ('Haier 50mm', 2.0, 16.0),
-    ('ZTE 30mm', 3.0, 16.0),
-    ('Samsung 28mm', 2.8, 22.0),
-    ('LG 24mm', 2.5, 16.0),
-    ('Leica 90mm', 1.0, 16.0),
-    ('Kodak 35mm', 2.8, 16.0),
-    ('Olympus 40mm', 2.0, 22.0);
+	delimiter $$
+	create procedure najmniejszaPrzekatnaProducenta(IN ProducentID int)
+	 begin
+		SELECT MIN(przekatna)
+		FROM Matryca m
+		INNER JOIN Aparat a on a.matryca = m.ID
+		INNER JOIN PRODUCENT p on p.ID = a.producent
+		WHERE producentID = p.ID;
+	end $$
+	delimiter ;
 
-    INSERT INTO Matryca (przekatna, rozdzielczosc, typ) VALUES
-    (3.5, 20.3, 'APS-C'),
-    (4.0, 24.2, 'FF'),
-    (2.7, 12.1, 'MFT'),
-    (5.6, 45.7, 'FF'),
-    (3.2, 16.0, 'APS-C'),
-    (2.0, 8.5, 'MFT'),
-    (3.9, 26.1, 'APS-C'),
-    (3.3, 15.5, 'APS-C'),
-    (4.5, 30.0, 'FF'),
-    (3.1, 12.0, 'MFT'),
-    (3.8, 20.0, 'APS-C'),
-    (4.6, 24.5, 'FF'),
-    (2.9, 10.0, 'APS-C'),
-    (5.0, 32.0, 'FF'),
-    (2.5, 7.1, 'MFT');
+6.
 
-    INSERT INTO Aparat (model, producent, matryca, obiektyw, waga, typ) VALUES
-    ('Canon EOS R5', 16, 100, 1, 0.65, 'lustrzanka'),
-    ('Nikon D850', 17, 101, 2, 0.91, 'lustrzanka'),
-    ('Sony A7 III', 18, 102, 3, 0.89, 'lustrzanka'),
-    ('Fujifilm X-T4', 19, 103, 4, 0.69, 'kompaktowy'),
-    ('Panasonic Lumix S1', 20, 104, 5, 0.75, 'lustrzanka'),
-    ('DJI Osmo Pocket', 21, 105, 6, 0.2, 'inny'),
-    ('Huawei P30 Pro', 22, 106, 7, 0.18, 'kompaktowy'),
-    ('Xiaomi Mi Note 10', 23, 107, 8, 0.21, 'kompaktowy'),
-    ('Haier X1', 24, 108, 9, 0.3, 'kompaktowy'),
-    ('ZTE Blade V8', 25, 109, 10, 0.2, 'inny'),
-    ('Samsung NX1', 26, 110, 11, 0.7, 'profesjonalny'),
-    ('LG V60', 27, 111, 12, 0.28, 'kompaktowy'),
-    ('Leica Q2', 28, 112, 13, 0.7, 'profesjonalny'),
-    ('Kodak PixPro', 29, 113, 14, 0.5, 'kompaktowy'),
-    ('Olympus OM-D', 30, 114, 15, 0.6, 'lustrzanka');
+	delimiter $$
+	CREATE TRIGGER dodajProducenta
+	BEFORE INSERT ON APARAT
+	FOR EACH ROW
+	begin
+		if not exists (SELECT 1 FROM Producent where new.producent = Producent.ID) then
+			INSERT INTO Producent (ID, nazwa)
+			VALUES (new.producent, 'nieznany');
+		end if;
+	end $$
 
-    bledne wartosci do testu:
-    INSERT INTO Matryca (przekatna, rozdzielczosc, typ) VALUES (-4.5, 20.0, 'APS-C');
+	delimiter ;
+	
+		
+	INSERT INTO Aparat (model, producent, matryca, obiektyw) VALUES ('model zad_6', 17, 101, 3);
 
-    INSERT INTO Obiektyw (model, minPrzeslona, maxPrzeslona) VALUES ('Testowy Obiektyw', 5.0, 3.5);
+7.
 
-    INSERT INTO Producent (nazwa, kraj) VALUES ('', 'USA');
 
-4. utworzyc procedure generujaca nowe aparaty.
-    uzytkownik 279734 nie moze wykonac ani utworcy takiej procedury. najpierw nalezy zmienic delimeter na inny np //
+8.
+	delimiter $$
 
-    delimiter //
+	CREATE TRIGGER usunMatryce 
+	AFTER DELETE ON APARAT 
+	FOR EACH ROW
+	begin 
+		if not exists (SELECT 1 FROM APARAT WHERE matryca = OLD.Matryca) then
+			DELETE FROM MATRYCA
+			WHERE ID = OLD.matryca;
+		end if;
+	end $$
+	 
+	delimiter ;
 
-    create procedure generujAparaty ()
-     begin
-          declare i int default 1;
-          declare randProducent int;
-          declare randMatryca int;
-          declare randObiektyw int;
-          declare randWaga float;
-          declare randTyp varchar(30);
-          declare model varchar(30);
-          declare randKoncowka int;
-          while i<=100 do
-              select ID into randProducent from `Producent` order by rand() limit 1;
+		
 
-              select ID into randMatryca from `Matryca` order by rand() limit 1;
 
-              select ID into randObiektyw from `Obiektyw` order by rand() limit 1;
 
-              set randWaga = round(0.5+(rand()*2.5),2);
-              set randTyp = elt(floor(1+rand()*4), 'kompaktowy', 'lustrzanka', 'profesjonalny', 'inny');
-              set randKoncowka = floor(1000+rand()*9000);
-              set model = concat('nowyModel', randKoncowka);
-              if not exists (select 1 from `Aparat` where model = model) then
-                  insert into `Aparat` values (model, randProducent, randMatryca, randObiektyw, randWaga, randTyp);
-              end if;
-              set i=i+1;
-          end while;
-     end //
-
-     delimiter ;
-
-5. Napisz funkcje lub procedure, która dla podanego ID producenta, zwraca wyprodukowany przez niego model aparatu z najmniejsza przekatna matrycy. Wywolanie normalnie selectem
-
-     delimiter //
-
-     create function najmniejszaPrzekatna (idProducent int) returns varchar(30)
-     begin
-          declare modelAparatu varchar(30);
-          select model into modelAparatu from `Aparat` join `Matryca` on `Aparat`.matryca = `Matryca`.ID where `Aparat`.producent = idProducent order by przekatna limit 1;
-          return modelAparatu;
-     end //
-
-     delimeter ;
-
-     select najmniejszaPrzekatna(31);
-
-6. Napisz trigger, który pozwoli wstawic do tabeli Aparat model wyprodukowany przez dowolnego producenta, a jesli takiego nie ma jeszcze w bazie danych, dodajego do odpowiedniej tabeli.
-
-    delimiter //
-
-     create trigger dodajProducenta
-     before insert on Aparat
-     for each row
-     begin
-         if not exists (select 1 from `Producent` where id = new.producent) then
-             insert into `Producent` (ID, nazwa, kraj, adresKorespodencyjny)
-             values (new.producent, 'nieznany', 'nieznany', 'nieznany');
-         end if;
-     end //
-
-    delimeter ;
-
-testowe:
-    insert into `Aparat` values ('nowyModel101', 1010, 131, 6, 0.5, 'kompaktowy');
-
-7. Napisz funkcje, która dla podanego ID matrycy, zwraca liczbe modeli aparatów z dana matryca
-
-    delimiter //
-
-    create function liczbaModeli (idMatryca int) returns int
-    begin
-        declare liczba int;
-        select count(*) into liczba from `Aparat` where matryca = idMatryca;
-        return liczba;
-    end //
-
-    delimeter ;
-
-    select liczbaModeli(130);
-
-8. Napisz trigger usuwajacy z tabeli Matryca matryce, dla której usuniety został ostatni aparat ja wykorzystujacy.
-
-    delimiter //
-
-    create trigger usunMatryce
-    after delete on Aparat
-    for each row
-    begin
-        if not exists (select 1 from `Aparat` where matryca = old.matryca) then
-            delete from `Matryca` where ID = old.matryca;
-        end if;
-    end //
-
-    delimeter ;
-
-    delete from `Aparat` where model = 'nowyModel101';
-
-9. Stwórz widok zawierajacy model aparatu, jego wage, nazwe jego producenta, przekatna i rozdzielczosc jego matrycy, minimalna oraz maksymymalna wartosc przesłony dla wszystkich aparatów typu lustrzanka wyprodukowanych przez producentów majacych siedzibe poza Chinami. Czy zadanie moze wykonac uzytkownik z zadania 1? nie moze wykonac uzytkownik z zadania 1
-
-    create view `WidokNieChiny` as
-    select `Aparat`.model, `Aparat`.waga, `Producent`.nazwa, `Matryca`.przekatna, `Matryca`.rozdzielczosc, `Obiektyw`.minPrzeslona, `Obiektyw`.maxPrzeslona
-    from `Aparat` join `Producent` on `Aparat`.producent = `Producent`.ID join `Matryca` on `Aparat`.matryca = `Matryca`.ID join `Obiektyw` on `Aparat`.obiektyw = `Obiektyw`.ID
-    where `Aparat`.typ = 'lustrzanka' and `Producent`.kraj != 'Chiny';
-
-10. Stwórz widok zawierajacy nazwe i kraj producenta oraz model, dla wszystkich aparatów. Nastepnie usun z tabeli Aparat wszystkie modele producentów z Chin. Czy cos zmieniło sie w widoku?
-
-    create view `WidokAparaty` as
-    select `Producent`.nazwa, `Producent`.kraj, `Aparat`.model
-    from `Aparat` join `Producent` on `Aparat`.producent = `Producent`.ID;
-
-    delete from `Aparat` where `producent` in (select `ID` from `Producent` where `kraj` = 'Chiny');
-
-    nie zmieni sie w widoku, poniewaz widok nie jest zapisany w bazie danych i  jest odswiezany automatycznie
-
-11. Do tabeli Producent dodaj kolumne liczbaModeli i uzupełnij ja na podstawie danych z tabeli Aparat (zadbaj, aby w kolumnie tej nie było wartosci null). Napisz nowe lub uzupełnij stare triggery, tak by przy kazdej zmianie (dodanie nowego modelu, usuniecie modelu, zmiana producenta) korygowac odpowiednia wartosc w nowej kolumnie. Czy taki trigger moze zostac utworzony przez uzytkownika z zadania 1? Czy bedzie działał podczas operacji na tabelach wykonywanych przez tego uzytkownika, jesli trigger został stworzony przez roota?
-
-    alter table `Producent` add `liczbaModeli` int not null default 0;
-s
-    delimiter //
-
-    create trigger dodajModel
-    after insert on Aparat
-    for each row
-    beginsho 
-        update `Producent` set `liczbaModeli` = `liczbaModeli` + 1 where `ID` = new.producent;
-    end //
-
-    create trigger usunModel
-    after delete on Aparat
-    for each row
-    begin
-        update `Producent` set `liczbaModeli` = `liczbaModeli` - 1 where `ID` = old.producent;
-    end //
-
-    create trigger zmienProducenta
-    after update on Aparat
-    for each row
-    begin
-        update `Producent` set `liczbaModeli` = `liczbaModeli` - 1 where `ID` = old.producent;
-        update `Producent` set `liczbaModeli` = `liczbaModeli` + 1 where `ID` = new.producent;
-    end //
-
-    delimeter ;
-
-    uzytkownik z zadania 1 nie moze utworzyc takiego triggera. trigger utworzony przez roota bedzie dzialal podczas operacji na tabelach wykonywanych przez tego uzytkownika
+	
