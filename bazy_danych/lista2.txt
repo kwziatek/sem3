@@ -148,8 +148,22 @@
 
 7.
 
+	delimiter $$
+
+	CREATE FUNCTION liczbaModeli(ID int) returns int
+	 begin
+		DECLARE liczba int;
+		SELECT COUNT(ID)
+		INTO liczba
+		FROM APARAT
+		WHERE APARAT.matryca = ID;
+		return liczba;
+	end $$
+
+	delimiter ;
 
 8.
+
 	delimiter $$
 
 	CREATE TRIGGER usunMatryce 
@@ -164,6 +178,97 @@
 	 
 	delimiter ;
 
+9.
+	
+	CREATE VIEW widokNieChiny as
+	SELECT Aparat.model, waga, nazwa, przekatna, rozdzielczosc, minPrzeslona, maxPrzeslona
+	From Aparat
+	INNER JOIN Producent on Producent.ID = producent
+	INNER JOIN Matryca on Matryca.ID = matryca
+	INNER JOIN Obiektyw on Obiektyw.ID = obiektyw
+	WHERE kraj != 'Chiny' and Aparat.typ = 'lustrzanka';
+	
+	//dla moich danych jest null, lustrzanki są tylko chińskie
+
+10.
+
+	CREATE VIEW nazwy_i_pochodzenie_producentow as 
+	SELECT nazwa, kraj, a.model
+	FROM Producent as p
+	INNER JOIN Aparat as a ON a.producent = p.ID;
+	
+
+11. 
+// procedura, żeby uzupełnić kolumne liczbaModeli z tabeli Procedura
+
+delimiter $$
+
+CREATE PROCEDURE uzupelnijLiczbeModeli() 
+ begin
+	UPDATE producent p
+	set liczbaModeli = (
+		select count(*)
+		from aparat a
+		where a.producent = p.ID
+	);
+ end $$
+ 
+delimiter ;
+
+//trigger, który zwiększa liczbe modeli danego producenta po dodaniu modelu
+
+delimiter $$
+
+CREATE TRIGGER zwiększModele
+ before insert on Aparat
+ for each row
+ 	begin
+
+	update producent p
+	set liczbaModeli = liczbaModeli + 1
+	where ID = NEW.producent;
+	
+	end$$
+
+delimiter ;
+
+//trigger, ktory zmniejsza liczbe modeli danego producenta po usunieciu modelu
+
+delimiter $$
+
+CREATE TRIGGER zmniejszModele 
+ before  delete on Aparat 
+ for each row 
+	begin
+	
+	update producent p
+	set liczbaModeli = liczbaModeli - 1
+	where ID = OLD.producent;
+
+end $$
+
+delimiter ;
+
+//trigger, ktory zmienia wartosci dla kolumny liczbaModeli przy zmianie producenta
+
+delimiter $$
+
+CREATE TRIGGER zmienProducenta
+ before update on Aparat
+ for each row
+	begin
+
+	update producent p
+	set liczbaModeli = liczbaModeli + 1
+	where ID = NEW.producent;
+
+	update producent p
+	set liczbaModeli = liczbaModeli - 1
+	where ID = OLD.producent;
+
+	end $$
+
+delimiter ;
 		
 
 

@@ -1,0 +1,8 @@
+zad 1.
+Tworzenie programu, który pozwala użytkownikowi na uzyskanie dostępu do powłoki Bash z prawami roota, jest ryzykowne z punktu widzenia bezpieczeństwa. Takie rozwiązanie może prowadzić do luk w systemie operacyjnym i potencjalnego nadużycia. W środowisku produkcyjnym lub wieloużytkownikowym takie narzędzie może zostać uznane za exploit.
+
+gcc -o a ex1.c
+
+sudo chmod u+s a
+
+./a
