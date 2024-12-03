@@ -1,0 +1,58 @@
+//sprawozdanie z listy 3 z baz danych
+
+zad.1
+CREATE TABLE Ludzie(
+    -> pesel varchar(11) primary key,
+    -> imie varchar(30),
+    -> nazwisko varchar(30),
+    -> data_urodzenia date,
+    -> plec enum('K', 'M'));
+
+
+create table Zawody(
+    -> zawod_id int primary key,
+    -> pensja_min float check(pensja_min > 0),
+    -> pensja_max float check(pensja_max >= pensja_min));
+
+
+create table pracownicy(
+    -> id int primary key auto_increment,
+    -> pesel char(11),
+    -> zawod_id int,
+    -> pensja float,
+    -> foreign key (pesel) references Ludzie(pesel) on delete cascade,
+    -> foreign key (zawod_id) references Zawody(zawod_id) on delete cascade);
+
+
+//trigger, który sprawdza czy pensja w tabeli pracownicy jest w przedziale pensji dla tego zawodu
+
+delimiter $$
+
+CREATE TRIGGER pensja_w_przedziale
+before insert on pracownicy
+for each row
+begin 
+	declare min_pensja int;
+	declare max_pensja int;
+	
+	select pensja_min, pensja_max into min_pensja, max_pensja from Zawody where zawod_id = NEW.zawod_id;
+
+	if NEW.pensja > max_pensja or NEW.pensja < min_pensja then	
+		signal sqlstate '45000'
+		set message_text = "Pensja jest poza dozwolonym zakresem dla tego zawodu";
+	end if;
+
+end $$
+
+delimiter ;
+
+//triggery, które sprawdzają czy pesel (k.p. w tabeli ludzie) ma odpowiedni format
+
+//sprawdzenie czy numer oznaczający miesiąc jest poprawny
+delimiter $$
+
+CREATE TRIGGER poprawny_miesiac
+before insert on ludzie 
+for each row 
+begin 
+	
