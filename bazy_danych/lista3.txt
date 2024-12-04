@@ -1,27 +1,31 @@
 //sprawozdanie z listy 3 z baz danych
 
+
 zad.1
+
+CREATE database praca;
+
 CREATE TABLE Ludzie(
-    -> pesel varchar(11) primary key,
-    -> imie varchar(30),
-    -> nazwisko varchar(30),
-    -> data_urodzenia date,
-    -> plec enum('K', 'M'));
+     pesel varchar(11) primary key,
+     imie varchar(30),
+     nazwisko varchar(30),
+     data_urodzenia date,
+     plec enum('K', 'M'));
 
 
 create table Zawody(
-    -> zawod_id int primary key,
-    -> pensja_min float check(pensja_min > 0),
-    -> pensja_max float check(pensja_max >= pensja_min));
+     zawod_id int primary key,
+     pensja_min float check(pensja_min > 0),
+     pensja_max float check(pensja_max >= pensja_min));
 
 
 create table pracownicy(
-    -> id int primary key auto_increment,
-    -> pesel char(11),
-    -> zawod_id int,
-    -> pensja float,
-    -> foreign key (pesel) references Ludzie(pesel) on delete cascade,
-    -> foreign key (zawod_id) references Zawody(zawod_id) on delete cascade);
+     id int primary key auto_increment,
+     pesel char(11),
+     zawod_id int,
+     pensja float,
+     foreign key (pesel) references Ludzie(pesel) on delete cascade,
+     foreign key (zawod_id) references Zawody(zawod_id) on delete cascade);
 
 
 //trigger, który sprawdza czy pensja w tabeli pracownicy jest w przedziale pensji dla tego zawodu
@@ -48,11 +52,111 @@ delimiter ;
 
 //triggery, które sprawdzają czy pesel (k.p. w tabeli ludzie) ma odpowiedni format
 
-//sprawdzenie czy numer oznaczający miesiąc jest poprawny
 delimiter $$
 
-CREATE TRIGGER poprawny_miesiac
+CREATE TRIGGER sprawdz_pesel
 before insert on ludzie 
 for each row 
 begin 
 	
+	declare miesiac int;
+	declare dzien int;
+		
+	declare wagi varchar(10);
+	declare suma int;
+	declare cyfra_kontrolna int;
+
+	set miesiac = cast(substring(NEW.pesel, 3, 2) as unsigned);
+	set dzien = cast(substring(NEW.pesel, 5, 2) as unsigned);
+
+	if char_length(NEW.pesel) != 11 then
+		signal sqlstate '45000'
+		set message_text = 'Numer pesel musi mieć dokladnie 11 cyfr';
+	end if;
+
+	if NEW.pesel NOT REGEXP "^[0-9]{11}$" then
+		signal sqlstate '45000'
+		set message_text = 'Numer pesel musi zawierać jedynie cyfry';
+	end if;
+
+	if miesiac > 32 or (miesiac > 12 && miesiac < 21) then
+		signal sqlstate '45000'
+		set message_text = 'Numer pesel zawiera niepoprawny miesiac';
+	end if;
+
+	if dzien > 31 then
+		signal sqlstate '45000'
+		set message_text = 'Numer pesel zawiera niepoprawny dzien';
+	end if;
+
+	set wagi = '1379137913';
+	set suma = 0;
+	for i in 1..10 do
+		set suma = suma + cast(substring(wagi, i, 1) as unsigned) * cast(substring(NEW.pesel, i, 1) as unsigned);
+	end for;
+
+	set cyfra_kontrolna = (10 - (suma % 10)) % 10;
+
+	if cyfra_kontrolna != cast(substring(NEW.pesel, 11, 1) as unsigned) then
+		signal sqlstate '45000'
+		set message_text = 'Cyfra kontrolna się nie zgadza';
+	end if;
+
+end $$
+
+delimiter ;
+
+
+//procedura zawierająca kursor, który przypisuje zawody pełnoletnim osobom
+
+delimiter $$ 
+
+create procedure wygeneruj_pracownikow()
+ begin
+	declare done int default 0;
+	declare new_pesel char(11);
+	declare new_age int;
+	declare new_gender char(1);
+	declare new_zawod_id int;
+	declare pensja_zawod float;
+
+	declare ludzie_cursor cursor for
+	select pesel, timestampdiff(YEAR, data_urodzenia, CURDATE()), plec 
+	from ludzie
+	where timestampdiff(year, data_urodzenia, curdate()) >= 18;
+
+	declare continue handler for not found set done = 1;
+
+	open ludzie_cursor;
+
+	fetch ludzie_cursor into new_pesel, new_age, new_gender;
+	
+	
+	while done = 0 do
+		
+		set new_zawod_id = floor(rand() * 4 + 1);
+		
+		if new_zawod_id = 3 then 
+			if (new_gender = 'M' and new_age > 65) or (new_gender = 'K' and new_age > 60) then
+				set new_zawod_id = 4;
+			end if;
+		end if;
+
+		-- obliczanie pensji 
+		select (pensja_min + rand() * (pensja_max - pensja_min))
+		into pensja_zawod from zawody
+		where zawod_id = new_zawod_id;
+
+		-- wstawianie do tabeli
+		insert into pracownicy (pesel, zawod_id, pensja) values
+		(new_pesel, new_zawod_id, pensja_zawod);
+	
+		-- pobieranie kolejnego wiersza
+		fetch ludzie_cursor into new_pesel, new_age, new_gender;
+
+	end while;
+	close ludzie_cursor;
+end $$
+
+delimiter ;
+		
