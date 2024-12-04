@@ -1,0 +1,299 @@
+1.
+create database lista3
+
+(zamieniłem primary key na id. Klucz główny (id) nie zawiera żadnych danych osobowych.
+System może łatwo obsługiwać inne identyfikatory, np. w przyszłości.
+Wygodniejsze zarządzanie - Przy migracji danych czy integracji z innymi systemami łatwiej jest pracować z prostym kluczem liczbowym niż z ciągiem znaków.)
+
+CREATE TABLE Ludzie (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    PESEL CHAR(11) NOT NULL UNIQUE,
+    imie VARCHAR(30) NOT NULL,
+    nazwisko VARCHAR(30) NOT NULL,
+    data_urodzenia DATE NOT NULL,
+    plec ENUM('K', 'M') NOT NULL
+);
+
+ALTER TABLE Ludzie
+ADD CONSTRAINT chk_PESEL_format
+CHECK (
+    -- Format: dokładnie 11 cyfr
+    PESEL REGEXP '^[0-9]{11}$'
+    AND
+    -- Miesiąc mieści się w zakresie 01-12, 21-32, 41-52, 61-72, 81-92 (dla odpowiednich stuleci)
+    SUBSTRING(PESEL, 3, 2) REGEXP '^(0[1-9]|1[0-2]|2[1-9]|3[0-2]|4[1-9]|5[0-2]|6[1-9]|7[0-2]|8[1-9]|9[0-2])$'
+    AND
+    -- Dzień mieści się w zakresie 01-31
+    SUBSTRING(PESEL, 5, 2) REGEXP '^(0[1-9]|[12][0-9]|3[01])$'
+    AND
+    -- Weryfikacja płci: ostatnia cyfra w liczbie porządkowej zgodna z płcią
+    (
+        (plec = 'K' AND CAST(SUBSTRING(PESEL, 10, 1) AS UNSIGNED) % 2 = 0) OR
+        (plec = 'M' AND CAST(SUBSTRING(PESEL, 10, 1) AS UNSIGNED) % 2 = 1)
+    )
+);
+
+create table Zawody (
+	zawod_id INT auto_increment primary key,
+        nazwa varchar(50) not null,
+        pensja_min float check (pensja_min >= 0),
+        pensja_max float check (pensja_max >= 0 and pensja_max > pensja_min)
+);
+
+CREATE TABLE Pracownicy (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	PESEL CHAR(11) NOT NULL UNIQUE,
+        zawod_id int NOT NULL,
+        pensja float NOT NULL CHECK (pensja >= 0),
+        FOREIGN KEY (PESEL) REFERENCES Ludzie(PESEL),
+        FOREIGN KEY (zawod_id) REFERENCES Zawody(zawod_id),
+        CONSTRAINT chk_PESEL_format CHECK (PESEL REGEXP '^[0-9]{11}$')
+);
+
+-- Osoby niepełnoletnie (5)
+INSERT INTO Ludzie (PESEL, imie, nazwisko, data_urodzenia, plec) VALUES
+('09250301520', 'Anna', 'Kowalska', '2009-05-03', 'K'),
+('11271203618', 'Jan', 'Nowak', '2011-07-12', 'M'),
+('14020902840', 'Ewa', 'Wiśniewska', '2014-02-09', 'K'),
+('13111403519', 'Adam', 'Zieliński', '2013-11-14', 'M'),
+('15070102026', 'Maria', 'Szymańska', '2015-07-01', 'K');
+
+-- Osoby w wieku 60 lat lub więcej (5)
+INSERT INTO Ludzie (PESEL, imie, nazwisko, data_urodzenia, plec) VALUES
+('54082418008', 'Zofia', 'Nowicka', '1954-08-24', 'K'),
+('49120118552', 'Stanisław', 'Wiśniewski', '1949-12-01', 'M'),
+('59040314444', 'Elżbieta', 'Dąbrowska', '1959-04-03', 'K'),
+('53101508537', 'Henryk', 'Pawlak', '1953-10-15', 'M'),
+('45110509726', 'Helena', 'Górska', '1945-11-05', 'K');
+
+-- Osoby wieku produkcyjnego (45) (wykorzystałem gpt do wygenerowania nazwisk i dat, PESELE poprawiłem samemu)
+INSERT INTO Ludzie (PESEL, imie, nazwisko, data_urodzenia, plec) VALUES 
+('82011508771', 'Piotr', 'Kamiński', '1982-01-15', 'M'),
+('90052218726', 'Agnieszka', 'Jankowska', '1990-05-22', 'K'),
+('75090910256', 'Tomasz', 'Lewandowski', '1975-09-09', 'M'),
+('86122300701', 'Magdalena', 'Wójcik', '1986-12-23', 'K'),
+('93110414353', 'Krzysztof', 'Kowalczyk', '1993-11-04', 'M'),
+('88021300161', 'Anna', 'Zielińska', '1988-02-13', 'K'),
+('83042109339', 'Michał', 'Wiśniewski', '1983-04-21', 'M'),
+('87061505624', 'Katarzyna', 'Nowak', '1987-06-15', 'K'),
+('92080904536', 'Łukasz', 'Lewandowski', '1992-08-09', 'M'),
+('84110218528', 'Ewa', 'Wojciechowska', '1984-11-02', 'K'),
+('80031718790', 'Paweł', 'Szymański', '1980-03-17', 'M'),
+('89053009549', 'Joanna', 'Kowalczyk', '1989-05-30', 'K'),
+('91072517992', 'Bartosz', 'Dąbrowski', '1991-07-25', 'M'),
+('86011006642', 'Monika', 'Wójcik', '1986-01-10', 'K'),
+('85020700695', 'Andrzej', 'Jankowski', '1985-02-07', 'M'),
+('94031216486', 'Zofia', 'Nowicka', '1994-03-12', 'K'),
+('80061402618', 'Wojciech', 'Wiśniewski', '1980-06-14', 'M'),
+('88082206424', 'Sylwia', 'Kowalska', '1988-08-22', 'K'),
+('92101619971', 'Krzysztof', 'Mazur', '1992-10-16', 'M'),
+('85120514967', 'Teresa', 'Szymańska', '1985-12-05', 'K'),
+('90042806715', 'Jakub', 'Kaczmarek', '1990-04-28', 'M'),
+('87091819083', 'Emilia', 'Nowak', '1987-09-18', 'K'),
+('89050400831', 'Michał', 'Kowalski', '1989-05-04', 'M'),
+('93022116381', 'Agnieszka', 'Lewandowska', '1993-02-21', 'K'),
+('82121402956', 'Tomasz', 'Kwiatkowski', '1982-12-14', 'M'),
+('86030304507', 'Magda', 'Wiśniewska', '1986-03-03', 'K'),
+('80051705734', 'Wojciech', 'Dąbrowski', '1980-05-17', 'M'),
+('89070215882', 'Joanna', 'Jankowska', '1989-07-02', 'K'),
+('83101312353', 'Rafał', 'Zieliński', '1983-10-13', 'M'),
+('85042200522', 'Alicja', 'Kowalczyk', '1985-04-22', 'K'),
+('90013018796', 'Bartosz', 'Kowalski', '1990-01-30', 'M'),
+('92081105349', 'Karolina', 'Nowak', '1992-08-11', 'K'),
+('84120905072', 'Piotr', 'Kwiatkowski', '1984-12-09', 'M'),
+('87062506365', 'Julia', 'Szymańska', '1987-06-25', 'K'),
+('82051918431', 'Adam', 'Wójcik', '1982-05-19', 'M'),
+('89011304680', 'Beata', 'Jankowska', '1989-01-13', 'K'),
+('83110813917', 'Michał', 'Dąbrowski', '1983-11-08', 'M'),
+('88072314469', 'Agata', 'Kowalska', '1988-07-23', 'K'),
+('92061419611', 'Łukasz', 'Zieliński', '1992-06-14', 'M'),
+('90090906566', 'Julia', 'Kaczmarek', '1990-09-09', 'K'),
+('84113003394', 'Zbigniew', 'Nowak', '1984-11-30', 'M'),
+('86101918666', 'Natalia', 'Wiśniewska', '1986-10-19', 'K'),
+('83052500599', 'Andrzej', 'Szymański', '1983-05-25', 'M'),
+('89020612486', 'Elżbieta', 'Kwiatkowska', '1989-02-06', 'K'),
+('91073017859', 'Krzysztof', 'Mazur', '1991-07-30', 'M');
+
+---uzupełnienie zawodów
+INSERT INTO Zawody (nazwa, pensja_min, pensja_max)
+VALUES
+('Polityk', 5000, 20000),
+('Nauczyciel', 3000, 8000),
+('Lekarz', 7000, 25000),
+('Informatyk', 5000, 15000);
+
+DELIMITER //
+
+CREATE PROCEDURE AssignJobs()
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE person_id INT;
+    DECLARE person_PESEL CHAR(11);
+    DECLARE person_age INT;
+    DECLARE person_gender ENUM('K', 'M');
+    DECLARE chosen_job_id INT;
+    DECLARE chosen_salary FLOAT;
+
+    -- Kursor do iteracji po pełnoletnich osobach
+    DECLARE cur CURSOR FOR 
+    SELECT id, PESEL, TIMESTAMPDIFF(YEAR, data_urodzenia, CURDATE()), plec
+    FROM Ludzie
+    WHERE TIMESTAMPDIFF(YEAR, data_urodzenia, CURDATE()) >= 18;
+
+    -- Obsługa końca kursora
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    OPEN cur;
+
+    read_loop: LOOP
+        FETCH cur INTO person_id, person_PESEL, person_age, person_gender;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Wybór zawodu
+        SET chosen_job_id = FLOOR(1 + (RAND() * 4)); -- Losowy zawód (1-4)
+        IF chosen_job_id = 3 THEN
+            -- Dodatkowe kryteria dla lekarzy
+            IF (person_gender = 'M' AND person_age > 65) OR (person_gender = 'K' AND person_age > 60) THEN
+                SET chosen_job_id = FLOOR(1 + (RAND() * 3)); -- Wyklucz lekarza
+            END IF;
+        END IF;
+
+        -- Obliczenie pensji w widełkach
+        SELECT (pensja_min + (RAND() * (pensja_max - pensja_min)))
+        INTO chosen_salary
+        FROM Zawody
+        WHERE zawod_id = chosen_job_id;
+
+        -- Wstawienie danych do tabeli Pracownicy
+        INSERT INTO Pracownicy (PESEL, zawod_id, pensja)
+        VALUES (person_PESEL, chosen_job_id, chosen_salary);
+    END LOOP;
+
+    CLOSE cur;
+END;
+//
+
+DELIMITER ;
+
+2.
+create index ludzie_plec_imie_idx
+	on Ludzie (plec, imie);
+
+create index pracownicy_pensja_idx
+	on Pracownicy (pensja);
+
+select * from `Ludzie` where plec = 'K' and imie like 'A%';
+select * from `Ludzie` where plec = 'K';
+select * from `Ludzie` where imie like 'K%';
+select * from `Pracownicy` WHERE pensja < 2000;
+
+select l.id, p.PESEL, l.imie, l.nazwisko, p.pensja from Pracownicy p join Ludzie l
+	on p.PESEL = l.PESEL
+        join Zawody z on p.zawod_id = z.zawod_id
+        where l.plec = 'M'
+        and z.nazwa = 'Informatyk'
+        and p.pensja > 10000;
+
+Ja mam po 4 indexy założone, na Wszelkie KEY, zarówno PRIMARY jak i FOREGIN, oraz te które dopisałem.
+
+Optymalizator wykorzysta u mnie w każdym
+
+3.
+DELIMITER //
+
+CREATE PROCEDURE PodwyzkaZawod(IN zawod_nazwa VARCHAR(50))
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE max_pensja FLOAT;
+    DECLARE min_pensja FLOAT;
+    DECLARE pracownik_id INT;
+    DECLARE pracownik_pensja FLOAT;
+    DECLARE nowa_pensja FLOAT;
+    
+    -- Zmienna do obsługi kursora
+    DECLARE cur CURSOR FOR
+        SELECT p.id, p.pensja
+        FROM Pracownicy p
+        JOIN Zawody z ON p.zawod_id = z.zawod_id
+        WHERE z.nazwa = zawod_nazwa;
+
+    -- Obsługa końca kursora
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    -- Pobranie minimalnej i maksymalnej pensji dla danego zawodu
+    SELECT pensja_min, pensja_max
+    INTO min_pensja, max_pensja
+    FROM Zawody
+    WHERE nazwa = zawod_nazwa;
+
+    -- Rozpoczynamy transakcję
+    START TRANSACTION;
+
+    OPEN cur;
+
+    read_loop: LOOP
+        FETCH cur INTO pracownik_id, pracownik_pensja;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Obliczenie nowej pensji (5% podwyżki)
+        SET nowa_pensja = pracownik_pensja * 1.05;
+
+        -- Sprawdzenie, czy nowa pensja nie przekroczy maksymalnej pensji
+        IF nowa_pensja > max_pensja THEN
+            -- Jeśli którekolwiek z pracowników przekroczy pensję, przerywamy operację
+            ROLLBACK;
+            LEAVE read_loop;
+        END IF;
+
+        -- Sprawdzenie, czy nowa pensja nie jest poniżej minimalnej pensji
+        IF nowa_pensja < min_pensja THEN
+            SET nowa_pensja = min_pensja; -- Ustawienie pensji na minimum, jeśli podwyżka zaniża pensję
+        END IF;
+
+        -- Aktualizacja pensji pracownika
+        UPDATE Pracownicy
+        SET pensja = nowa_pensja
+        WHERE id = pracownik_id;
+    END LOOP;
+
+    CLOSE cur;
+
+    -- Zatwierdzenie transakcji, jeśli wszystko przebiegło pomyślnie
+    COMMIT;
+
+END;
+//
+
+DELIMITER ;
+
+4.
+DELIMITER //
+
+prepare get_f from
+	'select count(*) as K_w_Zawodzie from Pracownicy p
+        join Ludzie l on l.PESEL = p.PESEL
+        join Zawody z on p.zawod_id = z.zawod_id
+        where l.plec = "K" and z.nazwa = ?;'
+//
+
+delimiter;
+
+execute get_f using 'Lekarz';
+
+5.
+--Tworzę backup korzystając z mysqldump 
+sudo mysqldump -u trollyuck -p lista3 > lista3backup.sql
+
+--drop na tabeli
+--logowanie do mysql, tworzenie nowej bazy i przywracanie starej
+mysql -p
+MariaDB [(none)]> create database restored_lista3;
+MariaDB [(none)]> use restored_lista3;
+MariaDB [restored_lista3]> source lista3backup.sql
+
+
+
