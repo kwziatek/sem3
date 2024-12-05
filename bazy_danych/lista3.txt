@@ -159,4 +159,196 @@ create procedure wygeneruj_pracownikow()
 end $$
 
 delimiter ;
-		
+
+zad2.
+
+//tworzenie *multi*indeksu dla tabeli ludzie
+
+create index imie_idx_plec_idx
+    -> on ludzie(imie, plec);
+
+//tworzenie indeksu dla tabeli pracownicy
+
+create index pensja_idx
+    -> on pracownicy(pensja);
+
+// Za pomocą odpowiednich kwerend sql wyciągnij z bazy dane:
+
+//wszystkich kobiet, których imie zaczyna się na 'A'
+
+select * from ludzie
+    -> where plec = 'K' and imie regexp '^A';
+
+//wszystkich kobiet
+
+select * from ludzie
+    -> where plec = 'K';
+
+//wszystkich osób, których imie zaczyna sie na 'K';
+
+select * from ludzie
+    -> where imie regexp '^K';
+
+//wszystkich osób zarabiających poniżej 2000
+
+select * from ludzie
+    -> inner join pracownicy as p on p.pesel = ludzie.pesel
+    -> where pensja < 2000;
+
+//wszystkich informatyków płci męskiej zarabiających powyżej 10000
+
+select * from ludzie
+    -> inner join pracownicy as p on p.pesel = ludzie.pesel
+    -> where plec = 'K' and zawod_id = 4 and pensja > 10000;
+
+//indeksy w tabeli pracownicy - k.p, klucze obce i stowrzony indeks pensja
+show indexes from pracownicy;
+
+//indeksy w tabeli ludzie - k.p, multiindeks 
+show indexes from ludzie;
+
+W przypadku wszystkich zapytań select, w których można użyć któregoś ze stworzonych indeksów.
+W tym przypadku do wszystkich pięciu.
+
+
+zad 3.
+
+delimiter $$
+
+create procedure podwyzka_pracownikow(in nazwa_zawodu varchar(30))
+ begin
+	declare max_pensja float;
+	declare cur_pensja float;
+	declare new_pensja float;
+	declare id_prac int;
+	declare done int default 0;
+	
+	declare cur cursor for
+	select pensja, id
+	from pracownicy as p 
+	inner join zawody as z on z.zawod_id = p. zawod_id
+	where nazwa_zawodu = z.nazwa;
+
+	
+	declare continue handler for not found set done = 1;
+
+
+	select pensja_max into max_pensja 
+	from zawody
+	where nazwa = nazwa_zawodu;
+
+	open cur;
+
+	start transaction;
+
+
+	simple_loop: LOOP
+		fetch cur into cur_pensja, id_prac;
+		if done then
+			leave simple_loop;
+		end if;
+
+		set new_pensja = cur_pensja * 1.05;
+
+		if new_pensja > max_pensja then
+			rollback;
+			leave simple_loop;
+		end if;
+
+		update pracownicy
+		set pensja = new_pensja
+		where id = id_prac;
+	end loop;
+	
+	close cur;
+
+	commit;
+
+ end $$
+
+delimiter ;
+
+//stworzyłem również analogiczną procedure obniżającą pensje pracownikow.
+
+delimiter $$
+
+create procedure obnizka_pracownikow(in nazwa_zawodu varchar(30))
+ begin
+	declare max_pensja float;
+	declare cur_pensja float;
+	declare new_pensja float;
+	declare id_prac int;
+	declare done int default 0;
+	
+	declare cur cursor for
+	select pensja, id 
+	from pracownicy as p 
+	inner join zawody as z on z.zawod_id = p. zawod_id
+	where nazwa_zawodu = z.nazwa;
+
+	
+	declare continue handler for not found set done = 1;
+
+
+	select pensja_max into max_pensja 
+	from zawody
+	where nazwa = nazwa_zawodu;
+
+	open cur;
+
+	start transaction;
+
+
+	simple_loop: LOOP
+		fetch cur into cur_pensja, id_prac;
+		if done then
+			leave simple_loop;
+		end if;
+
+		set new_pensja = cur_pensja * 0.95;
+
+		if new_pensja > max_pensja then
+			rollback;
+			leave simple_loop;
+		end if;
+
+		update pracownicy
+		set pensja = new_pensja
+		where id = id_prac;
+	end loop;
+	
+	close cur;
+
+	commit;
+
+ end $$
+
+delimiter ;
+
+
+4.
+DELIMITER $$
+
+prepare get_f from
+	select count(*) as K_w_Zawodzie from Pracownicy p
+        join Ludzie l on l.PESEL = p.PESEL
+        join Zawody z on p.zawod_id = z.zawod_id
+        where l.plec = "K" and z.nazwa = ?;
+$$
+
+delimiter ;
+
+execute get_f using 'Lekarz';
+
+5.
+
+mysqldump -u root -p praca > "C:/users/wziat/desktop/praca_backup.sql"
+
+//logowanie do mysql
+drop database praca;
+create database praca;
+ctrl + c
+
+//przywracanie bazy
+mysql -u root -p praca < "C:/users/wziat/desktop/praca_backup.sql"
+	
