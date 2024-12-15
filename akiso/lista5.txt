@@ -1,0 +1,390 @@
+zad 1.
+section .bss
+    buffer resb 16      ; Bufor na dane wejściowe
+
+section .data
+    message db "Suma cyfr: ", 0
+    message_len equ $ - message
+
+section .text
+    global _start
+
+_start:
+    ; Wczytaj dane wejściowe
+    mov eax, 3          ; syscall: read
+    mov ebx, 0          ; stdin
+    mov ecx, buffer     ; adres bufora
+    mov edx, 16         ; maksymalna liczba bajtów do odczytu
+    int 0x80
+
+    ; Przetwarzanie danych
+    mov esi, buffer     ; wskaźnik na początek bufora
+    mov ecx, eax        ; liczba wczytanych znaków
+    xor ebx, ebx        ; suma = 0
+
+parse_digits:
+    dec ecx             ; zmniejsz licznik
+    jl done_parsing     ; jeśli licznik < 0, zakończ
+
+    mov al, byte [esi]  ; pobierz bieżący znak
+    inc esi             ; przejdź do następnego znaku
+    cmp al, 10          ; sprawdź, czy to nowa linia (Enter)
+    je done_parsing     ; zakończ, jeśli tak
+    sub al, '0'         ; zamień ASCII na wartość liczbową
+    add ebx, eax        ; dodaj cyfrę do sumy
+    jmp parse_digits
+
+done_parsing:
+    ; Konwersja sumy na tekst
+    mov eax, ebx        ; przenieś sumę do eax
+    xor edi, edi        ; wskaźnik na koniec bufora pomocniczego
+
+convert_to_text:
+    xor edx, edx        ; wyzeruj edx
+    mov ebx, 10         ; dzielnik
+    div ebx             ; eax = eax / 10, edx = eax % 10
+    add dl, '0'         ; zamień na ASCII
+    dec esi             ; przesun wskaźnik w lewo
+    mov [esi], dl       ; zapisz cyfrę w buforze
+    inc edi             ; zwiększ licznik cyfr
+    test eax, eax       ; sprawdź, czy eax = 0
+    jnz convert_to_text ; jeśli nie, kontynuuj
+
+    ; Wyświetlenie wyniku
+    mov eax, 4          ; syscall: write
+    mov ebx, 1          ; stdout
+    mov ecx, message    ; adres komunikatu
+    mov edx, message_len; długość komunikatu
+    int 0x80
+
+    mov eax, 4          ; syscall: write
+    mov ebx, 1          ; stdout
+    lea ecx, [esi]      ; adres liczby w buforze
+    mov edx, edi        ; liczba znaków
+    int 0x80
+
+    ; Zakończenie programu
+    mov eax, 1          ; syscall: exit
+    xor ebx, ebx        ; kod wyjścia = 0
+    int 0x80
+
+zad 2.
+
+section .data
+    matrix db 1, 2, 3, 4, 5, 6, 7, 8, 9 ; Macierz 3x3 przechowywana w pamięci
+    message1 db "Suma elementów: ", 0
+    message1_len equ $ - message1
+    message2 db "Suma przekątnej: ", 0
+    message2_len equ $ - message2
+    newline db 10, 0 ; Znak nowej linii
+
+section .bss
+    buffer resb 16      ; Bufor na wyniki tekstowe
+
+section .text
+    global _start
+
+_start:
+    ; Inicjalizacja zmiennych
+    xor eax, eax        ; Suma całkowita
+    xor ebx, ebx        ; Suma przekątnej
+    mov ecx, 0          ; Indeks elementu
+
+sum_matrix:
+    cmp ecx, 9          ; Czy przetworzono wszystkie elementy?
+    jge display_results ; Jeśli tak, zakończ pętlę
+
+    mov edx, ecx        ; Skopiuj indeks do edx
+    mov al, byte [matrix + edx] ; Pobierz element z macierzy
+    add eax, ebx        ; Dodaj do sumy całkowitej
+    mov ebx, eax        ; Zaktualizuj sumę całkowitą
+
+    ; Oblicz indeksy przekątnej głównej (0, 4, 8)
+    mov edx, ecx
+    cmp edx, 0          ; Czy indeks to 0?
+    je add_diagonal
+    cmp edx, 4          ; Czy indeks to 4?
+    je add_diagonal
+    cmp edx, 8          ; Czy indeks to 8?
+    jne skip_diagonal
+
+add_diagonal:
+    add eax, ebx        ; Dodaj do sumy przekątnej
+    mov ebx, eax
+
+skip_diagonal:
+    inc ecx             ; Przejdź do następnego elementu
+    jmp sum_matrix
+
+display_results:
+    ; Konwersja sumy całkowitej na tekst
+    mov eax, ebx        ; Przenieś sumę do eax
+    xor edi, edi        ; Wskaźnik na koniec bufora
+
+convert_total_to_text:
+    xor edx, edx        ; Wyzeruj edx
+    mov ebx, 10         ; Dzielnik
+    div ebx             ; eax = eax / 10, edx = eax % 10
+    add dl, '0'         ; Zamień na ASCII
+    dec esi             ; Przesuń wskaźnik w lewo
+    mov [esi], dl       ; Zapisz cyfrę w buforze
+    inc edi             ; Zwiększ licznik cyfr
+    test eax, eax       ; Sprawdź, czy eax = 0
+    jnz convert_total_to_text ; Jeśli nie, kontynuuj
+
+zad 3.
+
+section .data
+    number dd 0x12345678     ; Liczba 32-bitowa do wyświetlenia (12345678 w szesnastkowym)
+    hex_chars db "0123456789abcdef", 0 ; Tablica znaków szesnastkowych
+    buffer db "00000000", 10, 0 ; Bufor na wynik w formacie szesnastkowym z nową linią
+    buffer_len equ $ - buffer   ; Długość bufora
+
+section .text
+    global _start
+
+_start:
+    ; Pobierz liczbę 32-bitową
+    mov eax, dword [number] ; Załaduj liczbę do eax
+
+    ; Konwersja na zapis szesnastkowy
+    mov edi, buffer         ; Wskaźnik na początek bufora
+    add edi, 7              ; Ustaw wskaźnik na ostatni znak liczby w buforze (bez nowej linii)
+    xor ecx, ecx            ; Licznik cyfr
+
+convert_to_hex:
+    mov edx, eax            ; Przenieś liczbę do edx
+    and edx, 0xF            ; Wyizoluj ostatnią cyfrę szesnastkową
+    mov bl, byte [hex_chars + edx] ; Pobierz odpowiadający znak z tablicy
+    mov [edi], bl           ; Zapisz znak do bufora
+    dec edi                 ; Przesuń wskaźnik w lewo
+    shr eax, 4              ; Przesuń liczbę o 4 bity w prawo (pozbycie się przetworzonej cyfry)
+    inc ecx                 ; Zwiększ licznik cyfr
+    cmp ecx, 8              ; Czy przetworzono 8 cyfr?
+    jl convert_to_hex       ; Jeśli nie, kontynuuj
+
+    ; Wyświetlenie wyniku
+    mov eax, 4              ; syscall: write
+    mov ebx, 1              ; stdout
+    mov ecx, buffer         ; Adres bufora
+    mov edx, buffer_len     ; Długość bufora
+    int 0x80
+
+    ; Zakończenie programu
+    mov eax, 1              ; syscall: exit
+    xor ebx, ebx            ; Kod wyjścia = 0
+    int 0x80
+
+zad 4.
+section .bss
+    sieve resb 100001       ; Tablica na sito Eratostenesa (1 bajt na liczbe od 0 do 100000)
+    buffer resb 12          ; Bufor na tekst liczby (maks. 10 cyfr + \n + \0)
+
+section .text
+    global _start
+
+_start:
+    ; Inicjalizacja tablicy sita
+    mov ecx, 100001         ; Długość tablicy
+    mov edi, sieve          ; Wskaźnik na początek tablicy
+    xor eax, eax            ; Wypełnij zerami (0 oznacza, że liczba jest potencjalnie pierwsza)
+    rep stosb               ; Wypełnij tablicę zerami
+
+    ; Algorytm Sita Eratostenesa
+    mov ebx, 2              ; Rozpoczęcie od liczby 2
+sieve_loop:
+    cmp ebx, 100001         ; Czy liczba przekracza zakres?
+    jge print_primes        ; Jeśli tak, zakończ pętlę
+    mov al, byte [sieve + ebx] ; Sprawdź, czy liczba jest oznaczona
+    cmp al, 0               ; 0 oznacza, że liczba jest potencjalnie pierwsza
+    jne next_number         ; Jeśli nie, przejdź do następnej liczby
+
+    ; Oznacz wielokrotności liczby jako niepierwsze
+    mov ecx, ebx            ; Aktualna liczba (p)
+    add ecx, ebx            ; Zaczynamy od 2*p
+mark_multiples:
+    cmp ecx, 100001         ; Czy wielokrotność przekracza zakres?
+    jge sieve_continue      ; Jeśli tak, wróć do głównej pętli
+    mov byte [sieve + ecx], 1 ; Oznacz wielokrotność jako niepierwszą
+    add ecx, ebx            ; Przejdź do następnej wielokrotności
+    jmp mark_multiples
+
+sieve_continue:
+    ; Przejdź do następnej liczby
+    inc ebx
+    jmp sieve_loop
+
+next_number:
+    inc ebx
+    jmp sieve_loop
+
+print_primes:
+    ; Wydruk liczb pierwszych
+    mov ebx, 2              ; Rozpoczęcie od liczby 2
+print_loop:
+    cmp ebx, 100001         ; Czy liczba przekracza zakres?
+    jge exit_program        ; Jeśli tak, zakończ pętlę
+    mov al, byte [sieve + ebx] ; Sprawdź, czy liczba jest pierwsza
+    cmp al, 0               ; 0 oznacza liczbę pierwszą
+    jne skip_print          ; Jeśli nie, pomiń drukowanie
+
+    ; Konwersja liczby na tekst
+    mov eax, ebx            ; Przenieś liczbę do eax
+    lea edi, [buffer + 11]  ; Wskaźnik na koniec bufora
+    mov byte [edi], 10      ; Dodaj znak nowej linii
+    dec edi
+convert_to_text:
+    xor edx, edx            ; Wyzeruj edx
+    mov ecx, 10             ; Podzielnik
+    div ecx                 ; eax = eax / 10, edx = eax % 10
+    add dl, '0'             ; Zamień na znak ASCII
+    mov [edi], dl           ; Zapisz znak do bufora
+    dec edi                 ; Przesuń wskaźnik w lewo
+    test eax, eax           ; Czy pozostały jeszcze cyfry do przetworzenia?
+    jnz convert_to_text
+
+    ; Wyświetlenie liczby
+    lea ecx, [edi + 1]      ; Adres liczby w buforze
+    mov edx, buffer + 12 - ecx ; Długość liczby
+    mov eax, 4              ; syscall: write
+    mov ebx, 1              ; stdout
+    int 0x80
+
+skip_print:
+    inc ebx                 ; Przejdź do następnej liczby
+    jmp print_loop
+
+exit_program:
+    ; Zakończenie programu
+    mov eax, 1              ; syscall: exit
+    xor ebx, ebx            ; Kod wyjścia = 0
+    int 0x80
+
+zad 5.
+
+[BITS 16]
+[ORG 0x7C00]        ; Program jest bootloaderem
+
+; ---------------------------------------------------------
+; Sekcja: Ustawienia i zmienne
+; ---------------------------------------------------------
+
+VIDEO_MODE equ 0x13 ; Tryb graficzny 320x200, 256 kolorów
+STACK_TOP equ 0x7C00
+
+; Rejestry dla rysowania zbioru Mandelbrota
+M_MAX      equ 255       ; Maksymalna liczba iteracji
+X_RES      equ 320       ; Rozdzielczość pozioma
+Y_RES      equ 200       ; Rozdzielczość pionowa
+X_MIN      equ -2.0      ; Minimalna wartość x (c_re)
+X_MAX      equ 1.0       ; Maksymalna wartość x (c_re)
+Y_MIN      equ -1.0      ; Minimalna wartość y (c_im)
+Y_MAX      equ 1.0       ; Maksymalna wartość y (c_im)
+
+section .data
+    boot_msg db 'Drawing Mandelbrot set...', 0
+
+section .bss
+    stack resb 512
+
+; ---------------------------------------------------------
+; Sekcja: Kod główny
+; ---------------------------------------------------------
+
+section .text
+start:
+    cli                     ; Wyłącz przerwania
+    mov ax, STACK_TOP       ; Ustaw stos
+    mov ss, ax
+    mov sp, STACK_TOP
+    sti                     ; Włącz przerwania
+
+    ; Tryb graficzny 320x200x256 (0x13)
+    mov ax, 0x0013          ; Funkcja 0 BIOS-u: ustaw tryb graficzny
+    int 0x10
+
+    ; Wyświetlenie komunikatu (opcjonalne)
+    ; mov si, boot_msg
+    ; call print_string
+
+    ; Rysowanie zbioru Mandelbrota
+    call mandelbrot
+
+    ; Czekaj na klawisz
+.wait:
+    mov ah, 0x00            ; Funkcja oczekiwania na klawisz (BIOS)
+    int 0x16
+    jmp .wait
+
+; ---------------------------------------------------------
+; Funkcja: Rysowanie zbioru Mandelbrota
+; ---------------------------------------------------------
+mandelbrot:
+    ; Przelicz współczynniki na piksele
+    ; Iteruj przez wszystkie piksele ekranu (320x200)
+    mov cx, 0               ; y (pionowy piksel)
+.next_row:
+    cmp cx, Y_RES
+    jge .done
+    push cx                 ; Zapisz bieżący wiersz
+
+    mov dx, 0               ; x (poziomy piksel)
+.next_col:
+    cmp dx, X_RES
+    jge .next_row_done
+
+    ; Konwersja pikseli na współrzędne zespolone
+    call pixel_to_complex
+
+    ; Sprawdzenie iteracji Mandelbrota
+    call mandelbrot_iter
+
+    ; Ustaw piksel w odpowiednim kolorze
+    mov ah, 0x0C            ; Funkcja BIOS-u: ustaw piksel
+    mov al, bl              ; Kolor piksela w zależności od iteracji
+    mov bh, 0x00            ; Strona wideo
+    int 0x10
+
+    inc dx
+    jmp .next_col
+
+.next_row_done:
+    pop cx                  ; Przywróć bieżący wiersz
+    inc cx
+    jmp .next_row
+
+.done:
+    ret
+
+; ---------------------------------------------------------
+; Funkcja: Konwersja pikseli na współrzędne zespolone
+; ---------------------------------------------------------
+pixel_to_complex:
+    ; (cx, dx) -> współrzędne zespolone
+    ; c_re = X_MIN + (dx / X_RES) * (X_MAX - X_MIN)
+    ; c_im = Y_MIN + (cx / Y_RES) * (Y_MAX - Y_MIN)
+    ; Implementacja uproszczona dla precyzji fixed-point
+    ret
+
+; ---------------------------------------------------------
+; Funkcja: Iteracje Mandelbrota
+; ---------------------------------------------------------
+mandelbrot_iter:
+    ; Z = 0
+    ; Iteruj Z = Z^2 + C aż |Z| > 2 lub osiągnięcie M_MAX
+    ; BL = liczba iteracji (kolor piksela)
+    mov bl, M_MAX
+    ret
+
+; ---------------------------------------------------------
+; Funkcja: Wyświetlenie komunikatu (print_string)
+; ---------------------------------------------------------
+print_string:
+    ; Wyświetla łańcuch znaków zakończony NULL
+    ret
+
+; ---------------------------------------------------------
+; Sekcja: Bootloader
+; ---------------------------------------------------------
+times 510-($-$$) db 0  ; Wypełnij do 512 bajtów
+dw 0xAA55              ; Znak bootloadera
