@@ -1,0 +1,167 @@
+Sprawozdanie z labów z baz danych lista4
+
+279734 - username
+sMG88j - hasło
+
+2.
+	//stworzenie kolekcji 
+	db.createCollection('authors')
+	db.createCollection('books')
+	show collections
+
+	//uzupełnienie kolekcji danymi w opisany w treści zadania sposób
+	db.authors.insertOne({name: {first: "J.R.R", last: "Tolkien"}, country: "UK", birth: new Date('Jan 3, 1892'), death: new Date('Sep 2, 1973') }) // 67656f0ea69dbf59b54eeb8a - id
+
+	db.books.insertOne({title: "The Hobbit", isbn: "978-0-261-10295-6", publication_year: 1937, language: "English", author: ObjectId('67656f0ea69dbf59b54eeb8a'), publisher: {name: "George Allen", country: "UK"} })
+
+	
+	db.authors.insertOne({name: {first: "Juliusz", last: "Słowacki"}, country: "Poland", birth: new Date('Sep 4, 1809'), death: new Date('Apr 3, 1849') }) // 67656f5da69dbf59b54eeb8b - id
+
+	db.books.insertOne({title: "Kordian", isbn: "978-83-732-7167-8", publication_year: 1834, language: "Polish", author: ObjectId('67656f5da69dbf59b54eeb8b'), publisher: {name: "Some French Publisher", country: "France"} })
+
+	db.books.insertOne({title: "Balladyna", isbn: "978-83-751-7850-0", publication_year: 1839, language: "Polish", author: ObjectId('67656f5da69dbf59b54eeb8b'), publisher: {name: "Some French Publisher", country: "France"} })
+
+	db.books.insertOne({title: "Mazepa", isbn: "978-83-663-6274-1", publication_year: 1840, language: "Polish", author: ObjectId('67656f5da69dbf59b54eeb8b'), publisher: {name: "Some French Publisher", country: "France"} })
+
+	db.authors.insertOne({name: {first: "Adam", last: "Mickiewicz"}, country: "Poland", birth: new Date('Dec 13, 1798'), death: new Date('Nov 26, 1855') }) // 67656f78a69dbf59b54eeb8c - id
+
+	db.books.insertOne({title: "Pan Tadeusz", isbn: "978-83-070-3341-9", publication_year: 1834, language: "Polish", author: ObjectId('67656f78a69dbf59b54eeb8c'), publisher: {name: "Some Other French Publisher", country: "France"} })
+
+	db.books.insertOne({title: "Dziady część III", isbn: "978-83-7222-580-1", publication_year: 1832, language: "Polish", author: ObjectId('67656f78a69dbf59b54eeb8c'), publisher: {name: "Some German Publisher", country: "Germany"} })
+	
+	db.authors.insertOne({name: {first: "Johann Wolfgang", last: "von Goethe"}, country: "Germany", birth: new Date('Aug 28, 1749'), death: new Date('Mar 22, 1832') }) // 67656f8ea69dbf59b54eeb8d - id
+
+	db.books.insertOne({title: "Cierpienia młodego Wertera", isbn: "83-7327-602-5", publication_year: 1774, language: "German", author: ObjectId('67656f8ea69dbf59b54eeb8d'), publisher: {name: "Some Other German Publisher", country: "Germany"} })
+
+	db.books.insertOne({title: "Faust", isbn: "978-83-827-9581-3", publication_year: 1833, language: "German", author: ObjectId('67656f8ea69dbf59b54eeb8d'), publisher: {name: "Some Other German Publisher", country: "Germany"} })
+
+	//sprawdzenie czy można podać wartość NULL w dacie śmierci
+
+	db.authors.insertOne({name: {first: "Alive", last: "von Goethe"}, country: "Germany", birth: new Date('Aug 28, 1749'), death: null })
+	
+	//można
+
+	//sprawdzenie czy można pominąć pole
+
+	db.authors.insertOne({name: {first: "Not born", last: "von Goethe"}, country: "Germany", death: null })
+	
+	//można
+
+	//sprawdzenie czy można zrobić literówke w nazwie pola
+
+	db.authors.insertOne({namee: {first: "Not born", last: "von Goethe"}, country: "Germany", death: null })
+
+	//można
+
+	//Skoro można pomijać pola i zmieniać ich nazwy, to oznacza, że można wstawiać dokumenty o zupełnie innych 	schematach do jednej kolekcji
+
+	//Można stowrzyć schemat wymuszający poprwaność danych używająć $jsonSchema oraz collMod
+
+db.authors.drop()
+
+db.createCollection('authors', 
+{
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+        required: [
+          "name",
+          "country",
+          "birth",
+          "death"
+        ],
+          properties: {
+        name: {
+          bsonType: "object",
+            required: [
+              "first",
+              "last"
+            ],
+              properties: {
+            first: {
+              bsonType: "string",
+                description: "must be a string"
+            },
+            last: {
+              bsonType: "string",
+                description: "must be a string"
+            }
+          }
+        },
+        country: {
+          bsonType: "string",
+            description: "must be a string"
+        },
+        birth: {
+          bsonType: "date",
+            description: "must be a date"
+        },
+        death: {
+          bsonType: "date",
+            description: "must be a date"
+        }
+      }
+    }
+  }
+}
+)
+
+db.authors.insertOne({namee: {first: "Not born", last: "von Goethe"}, country: "Germany", death: null })
+//już nie działa
+	
+//wprowadzenie schematu, który uniemożliwi wprowadzenie błędnych danych do kolekcji
+
+db.createCollection('reviews', {
+    validator: {
+        $jsonSchema: {
+            bsonType: "object",
+            required: [ "book", "reviewer", "rating", "review" ],
+            properties: {
+                book: {
+                    bsonType: "objectId",
+                    description: "must be a objectId"
+                },
+                reviewer: {
+                    bsonType: "object",
+		    required: ["first_name", "last_name"],
+                    properties: {
+		        first_name: {
+			    bsonType: "string",
+			    description: "must be a string"
+			},
+			last_name: {
+			    bsonType: "string",
+			    description: "must be a string"
+			}
+		    }
+                },
+                rating: {
+                    bsonType: "int",
+                    minimum: 1,
+                    maximum: 5,
+                    description: "must be an integer in range 1-5"
+                },
+                review: {
+                    bsonType: "string",
+                    description: "must be a string"
+                }
+            }
+        }
+    }
+})
+
+//wprowadzenie kilku recenzji 
+
+db.reviews.insertOne({book: ObjectId("67656ff8a69dbf59b54eeb8f"), reviewer: {first_name: "Jan", last_name: "Matejko"}, rating: 4, review: "Niecodzienny dramat przedstawiający losy młodego człowieka próbującego odnaleźć swoje miejsce na ziemi"})
+
+db.reviews.insertOne({book: ObjectId("67656fffa69dbf59b54eeb90"), reviewer: {first_name: "Jan", last_name: "Matejko"}, rating: 3, review: "Zdecydowanie zbyt brutalna, bez drugiego dna"})
+
+db.reviews.insertOne({book: ObjectId("6765701aa69dbf59b54eeb92"), reviewer: {first_name: "Jan", last_name: "Matejko"}, rating: 5, review: "Wybitne dzieło"})
+
+db.reviews.insertOne({book: ObjectId("67657045a69dbf59b54eeb95"), reviewer: {first_name: "Junior", last_name: "Matejko"}, rating: 4, review: "Lektura godna polecenia"})
+
+db.reviews.insertOne({book: ObjectId("67656fe0a69dbf59b54eeb8e"), reviewer: {first_name: "Tolkien", last_name: "Fan"}, rating: 5, review: "The best book I've ever read"})
+
+//wprowadzenie podziału imienia i nazwiska recenzenta na osobne pole umożliwia wyszukiwanie recenzentów o danych imieniu lub nazwisku
+
+     
