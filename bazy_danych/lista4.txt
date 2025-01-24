@@ -164,4 +164,147 @@ db.reviews.insertOne({book: ObjectId("67656fe0a69dbf59b54eeb8e"), reviewer: {fir
 
 //wprowadzenie podziału imienia i nazwiska recenzenta na osobne pole umożliwia wyszukiwanie recenzentów o danych imieniu lub nazwisku
 
+//dodanie do każdego dokumentu z kolekcji authors nowego pola awards
+
+db.authors.updateMany({}, { $set: { awards: [] } })
+
+//zaktualizowanie nagród autorów książek
+
+db.authors.updateOne(
+	{"name.first": "Juliusz", "name.last": "Słowacki"},
+	{ $addToSet: {awards: "AwardForSlowacki"}}
+)
+
+db.authors.updateOne(
+	{"name.first": "Adam", "name.last": "Mickiewicz"},
+	{ $addToSet: {awards: "AwardForMickiewicz"} }
+)
+
+db.authors.find({"name.first": "Adam", "name.second": "Mickiewicz"})
+//dodanie do każdego dokumentu z kolekcji books nowego pola genres
+
+db.books.updateMany({}, { $set: {genres: [] } })
+
+//zaaktualizowanie gatunków literackich książek
+
+db.books.updateOne(
+	{ title: "The Hobbit"},
+	{ $addToSet: {genres: "Fantasy" } }
+)
+
+db.books.updateOne(
+	{ title: "Kordian"},
+	{ $addToSet: {genres: "Drama" } }
+)
+
+db.books.updateOne(
+	{ title: "Balladyna"},
+	{ $addToSet: {genres: "Drama" } }
+)
+
+db.books.updateOne( {title: "Dziady część III"}, { $addToSet: {genres: "Fantasy"}})
+
+3.
+
+//wszystkie ksiazki Mickiewicza
+db.authors.find({name: {first: "Adam", last: "Mickiewicz"}})
+db.books.find({author: ObjectId("67656f78a69dbf59b54eeb8c")})
+
+//alternatywnie
+db.books.find({author: db.authors.findOne({name: {first: "Adam", last: "Mickiewicz"}})._id})
+
+//lub
+db.books.find({author: db.authors.findOne({"name.first": "Adam", "name.last": "Mickiewicz"})._id})
+
+//wszystkie książki po Polsku z gatunku Fantasy
+db.books.find({language: "Polish", genres: "Fantasy"})
+
+//wyszukiwanie książek, które miały średnią ocene przynajmniej 4 przy pomocy aggregate
+db.books.aggregate([
+    {
+        $lookup: {
+            from: "reviews",
+            localField: "_id",
+            foreignField: "book",
+            as: "book_reviews"
+        }
+    },
+    {
+        $addFields: {
+            average_rating: {
+                $avg: "$book_reviews.rating"
+            }
+        }
+    },
+    {
+        $match: {
+            average_rating: { $gte: 4 }
+        }
+    },
+    {
+        $project: {
+            _id: 0,
+            title: 1,
+            isbn: 1,
+            publication_year: 1,
+            language: 1,
+            author: 1,
+            average_rating: 1
+        }
+    }
+]);
+
+//wyszukiwanie książek polskich autorów
+db.books.aggregate([
+    {
+        $lookup: {
+            from: "authors",
+            localField: "author",
+            foreignField: "_id",
+            as: "author_info"
+        }
+    },
+    {
+        $unwind: "$author_info"
+    },
+    {
+        $match: {
+            "author_info.country": "Poland"
+        }
+    },
+    {
+        $lookup: {
+            from: "reviews",
+            localField: "_id",
+            foreignField: "book",
+            as: "reviews"
+        }
+    },
+    {
+        $addFields: {
+            average_rating: {
+                $cond: {
+                    if: { $gt: [{ $size: "$reviews" }, 0] },
+                    then: { $avg: "$reviews.rating" },
+                    else: null
+                }
+            }
+        }
+    },
+    {
+        $project: {
+            _id: 0,
+            title: 1,
+            isbn: 1,
+            publication_year: 1,
+            language: 1,
+            author: {
+                first: "$author_info.name.first",
+                last: "$author_info.name.last"
+            },
+            average_rating: 1
+        }
+    }
+])
+
      
